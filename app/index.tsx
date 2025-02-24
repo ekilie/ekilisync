@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 
@@ -41,7 +42,7 @@ export default function SplashScreen() {
           },
         ]}
       >
-        <Ionicons name="medical" size={100} color="white" />
+        <FontAwesome6 name="clover" size={100} color="white" />
         <Text style={styles.appName}>ekiliSync</Text>
       </Animated.View>
     </View>

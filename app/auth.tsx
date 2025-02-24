@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as LocalAuthentication from "expo-local-authentication";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 const { width } = Dimensions.get("window");
@@ -35,15 +35,13 @@ export default function AuthScreen() {
       setIsAuthenticating(true);
       setError(null);
 
-      // Check if device has biometric hardware
+      // Check for biometric hardware and enrollment
       const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const supportedTypes =
-        await LocalAuthentication.supportedAuthenticationTypesAsync();
-      const hasBiometrics = await LocalAuthentication.isEnrolledAsync();
+      const hasBiometricsEnrolled = await LocalAuthentication.isEnrolledAsync();
 
       const auth = await LocalAuthentication.authenticateAsync({
         promptMessage:
-          hasHardware && hasBiometrics
+          hasHardware && hasBiometricsEnrolled
             ? "Use Face ID or Touch ID"
             : "Enter your PIN to access ekiliSync",
         fallbackLabel: "Use PIN",
@@ -68,18 +66,20 @@ export default function AuthScreen() {
     <LinearGradient colors={["#4CAF50", "#2E7D32"]} style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <Ionicons name="medical" size={80} color="white" />
+          <FontAwesome6 name="clover" size={100} color="white" />
         </View>
 
         <Text style={styles.title}>ekiliSync</Text>
-        <Text style={styles.subtitle}>Your Personal Medication Assistant</Text>
+        <Text style={styles.subtitle}>
+          Your Couple Task & Consistency Tracker
+        </Text>
 
         <View style={styles.card}>
           <Text style={styles.welcomeText}>Welcome Back!</Text>
           <Text style={styles.instructionText}>
             {hasBiometrics
-              ? "Use Face ID/Touch ID or PIN to access your medications"
-              : "Enter your PIN to access your medications"}
+              ? "Use Face ID/Touch ID or PIN to access ekiliSync"
+              : "Enter your PIN to access ekiliSync"}
           </Text>
 
           <TouchableOpacity
@@ -113,6 +113,7 @@ export default function AuthScreen() {
     </LinearGradient>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
