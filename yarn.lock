@@ -4013,9 +4013,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bycicle-rental-app@workspace:.":
+"ekiliSync@workspace:.":
   version: 0.0.0-use.local
-  resolution: "bycicle-rental-app@workspace:."
+  resolution: "ekiliSync@workspace:."
   dependencies:
     "@babel/core": "npm:^7.25.2"
     "@expo/vector-icons": "npm:^14.0.2"
