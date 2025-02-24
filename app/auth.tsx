@@ -14,13 +14,24 @@ import { LinearGradient } from "expo-linear-gradient";
 
 const { width } = Dimensions.get("window");
 
+const phrases = [
+  "Sync, love, and conquer.",
+  "Where love meets laser focus.",
+  "Epic love, epic adventures.",
+  "Unleash your duo dynamism.",
+  "Simplify your day, together."
+];
+
 export default function AuthScreen() {
   const router = useRouter();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasBiometrics, setHasBiometrics] = useState(false);
+  
+  const [tagline, setTagline] = useState(phrases[0]);
 
   useEffect(() => {
+    setTagline(phrases[Math.floor(Math.random() * phrases.length)])
     checkBiometrics();
   }, []);
 
@@ -71,7 +82,7 @@ export default function AuthScreen() {
 
         <Text style={styles.title}>ekiliSync</Text>
         <Text style={styles.subtitle}>
-          Your Couple Task & Consistency Tracker
+          {tagline}
         </Text>
 
         <View style={styles.card}>
@@ -97,8 +108,8 @@ export default function AuthScreen() {
               {isAuthenticating
                 ? "Verifying..."
                 : hasBiometrics
-                ? "Authenticate"
-                : "Enter PIN"}
+                  ? "Authenticate"
+                  : "Enter PIN"}
             </Text>
           </TouchableOpacity>
 
