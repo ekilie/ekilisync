@@ -45,7 +45,7 @@ export default function AuthScreen() {
         promptMessage:
           hasHardware && hasBiometrics
             ? "Use Face ID or Touch ID"
-            : "Enter your PIN to access MedRemind",
+            : "Enter your PIN to access ekiliSync",
         fallbackLabel: "Use PIN",
         cancelLabel: "Cancel",
         disableDeviceFallback: false,
@@ -71,7 +71,7 @@ export default function AuthScreen() {
           <Ionicons name="medical" size={80} color="white" />
         </View>
 
-        <Text style={styles.title}>MedRemind</Text>
+        <Text style={styles.title}>ekiliSync</Text>
         <Text style={styles.subtitle}>Your Personal Medication Assistant</Text>
 
         <View style={styles.card}>
