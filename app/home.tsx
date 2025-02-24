@@ -159,9 +159,9 @@ export default function HomeScreen() {
           durationDays === -1 ||
           (today >= startDate &&
             today <=
-              new Date(
-                startDate.getTime() + durationDays * 24 * 60 * 60 * 1000
-              ))
+            new Date(
+              startDate.getTime() + durationDays * 24 * 60 * 60 * 1000
+            ))
         ) {
           return true;
         }
