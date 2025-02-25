@@ -27,6 +27,7 @@ import {
   registerForPushNotificationsAsync,
   scheduleMedicationReminder,
 } from "../utils/notifications";
+import { Colors } from "@/constants/Colors";
 
 const { width } = Dimensions.get("window");
 
@@ -37,9 +38,9 @@ const QUICK_ACTIONS = [
   {
     icon: "add-circle-outline" as const,
     label: "Add Task",
-    route: "/medications/add" as const,
+    route: "/tasks/add" as const,
     color: "#2E7D32",
-    gradient: ["#d98880", "#2E7D32"] as [string, string],
+    gradient: [Colors.accentLight, Colors.accent] as [string, string],
   },
   {
     icon: "calendar-outline" as const,
@@ -250,7 +251,7 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <LinearGradient colors={["#1a8e2d", "#146922"]} style={styles.header}>
+      <LinearGradient colors={[Colors.accentLight, Colors.accent]} style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
             <View style={styles.flex1}>

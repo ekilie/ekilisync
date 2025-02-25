@@ -14,6 +14,8 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { addTaskList, TaskList, TaskItem } from "../../utils/ekilisync";
+import { StatusBar } from "expo-status-bar";
+import { Colors } from "@/constants/Colors";
 
 const { width } = Dimensions.get("window");
 
@@ -93,8 +95,9 @@ export default function AddTaskListScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="light" />
       <LinearGradient
-        colors={["#1a8e2d", "#146922"]}
+        colors={[Colors.accentLight, Colors.accent]}
         style={styles.headerGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
@@ -103,7 +106,7 @@ export default function AddTaskListScreen() {
       <View style={styles.content}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={28} color="#1a8e2d" />
+            <Ionicons name="chevron-back" size={28} color={Colors.accent} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>New Task List</Text>
         </View>
@@ -167,7 +170,7 @@ export default function AddTaskListScreen() {
             disabled={isSubmitting}
           >
             <LinearGradient
-              colors={["#1a8e2d", "#146922"]}
+              colors={[Colors.accentLight, Colors.accent]}
               style={styles.saveButtonGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
@@ -289,7 +292,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   addItemButton: {
-    backgroundColor: "#1a8e2d",
+    backgroundColor: Colors.accent,
     padding: 12,
     borderRadius: 16,
   },
