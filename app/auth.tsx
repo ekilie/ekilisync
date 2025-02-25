@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 import * as LocalAuthentication from "expo-local-authentication";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { Colors } from "@/constants/Colors";
 
 const { width } = Dimensions.get("window");
 
@@ -74,9 +75,10 @@ export default function AuthScreen() {
   };
 
   return (
-    <LinearGradient colors={["#d98880", "#2E7D32"]} style={styles.container}>
+    <LinearGradient colors={[Colors.accentLight, Colors.accent]} style={styles.container}>
       <View style={styles.content}>
-        <View style={styles.iconContainer}>
+        {/* TODO:add animation on the item */}
+        <View style={styles.iconContainer}> 
           <FontAwesome6 name="clover" size={100} color="white" />
         </View>
 

@@ -30,6 +30,14 @@ export default function Layout() {
           }}
         />
         <Stack.Screen
+          name="tasks/add"
+          options={{
+            headerShown: false,
+            headerBackTitle: "",
+            title: "",
+          }}
+        />
+        <Stack.Screen
           name="refills/index"
           options={{
             headerShown: false,
