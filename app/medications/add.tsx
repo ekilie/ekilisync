@@ -131,7 +131,7 @@ export default function AddMedicationScreen() {
       setIsSubmitting(true);
 
       // Generate a random color
-      const colors = ["#4CAF50", "#2196F3", "#FF9800", "#E91E63", "#9C27B0"];
+      const colors = ["#d98880", "#2196F3", "#FF9800", "#E91E63", "#9C27B0"];
       const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
       const medicationData = {

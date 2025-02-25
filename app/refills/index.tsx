@@ -77,7 +77,7 @@ export default function RefillTrackerScreen() {
     } else {
       return {
         status: "Good",
-        color: "#4CAF50",
+        color: "#d98880",
         backgroundColor: "#E8F5E9",
       };
     }

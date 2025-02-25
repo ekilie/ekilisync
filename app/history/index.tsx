@@ -228,9 +228,9 @@ export default function HistoryScreen() {
                         <Ionicons
                           name="checkmark-circle"
                           size={16}
-                          color="#4CAF50"
+                          color="#d98880"
                         />
-                        <Text style={[styles.statusText, { color: "#4CAF50" }]}>
+                        <Text style={[styles.statusText, { color: "#d98880" }]}>
                           Taken
                         </Text>
                       </View>

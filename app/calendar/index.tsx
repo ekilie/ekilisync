@@ -134,7 +134,7 @@ export default function CalendarScreen() {
           </View>
           {taken ? (
             <View style={styles.takenBadge}>
-              <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+              <Ionicons name="checkmark-circle" size={20} color="#d98880" />
               <Text style={styles.takenText}>Taken</Text>
             </View>
           ) : (
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   takenText: {
-    color: "#4CAF50",
+    color: "#d98880",
     fontWeight: "600",
     fontSize: 14,
     marginLeft: 4,

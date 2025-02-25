@@ -39,7 +39,7 @@ const QUICK_ACTIONS = [
     label: "Add Task",
     route: "/medications/add" as const,
     color: "#2E7D32",
-    gradient: ["#4CAF50", "#2E7D32"] as [string, string],
+    gradient: ["#d98880", "#2E7D32"] as [string, string],
   },
   {
     icon: "calendar-outline" as const,
@@ -357,7 +357,7 @@ export default function HomeScreen() {
                       <Ionicons
                         name="checkmark-circle"
                         size={20}
-                        color="#4CAF50"
+                        color="#d98880"
                       />
                       <Text style={styles.takenText}>Taken</Text>
                     </View>
@@ -716,7 +716,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   takenText: {
-    color: "#4CAF50",
+    color: "#d98880",
     fontWeight: "600",
     fontSize: 14,
     marginLeft: 4,

@@ -74,7 +74,7 @@ export default function AuthScreen() {
   };
 
   return (
-    <LinearGradient colors={["#4CAF50", "#2E7D32"]} style={styles.container}>
+    <LinearGradient colors={["#d98880", "#2E7D32"]} style={styles.container}>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
           <FontAwesome6 name="clover" size={100} color="white" />
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   button: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#d98880",
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 12,
