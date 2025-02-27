@@ -14,6 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Colors } from "@/constants/Colors";
 import { Task, getTasks, updateTask } from "@/utils/ekilisync";
 import { StatusBar } from "expo-status-bar";
+import { Header } from "@/components/HomeHeader";
 
 const { width } = Dimensions.get("window");
 
@@ -97,24 +98,11 @@ export default function HomeScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <StatusBar style="light" />
-      <LinearGradient colors={[Colors.accentLight, Colors.accent]} style={styles.header}>
-        <View style={styles.headerContent}>
-          <View style={styles.headerTop}>
-            <View style={styles.flex1}>
-              <Text style={styles.greeting}>ekiliSync</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.statsButton}
-              onPress={() => setShowCompleted(!showCompleted)}
-            >
-              <Ionicons name="stats-chart" size={24} color="white" />
-              <Text style={styles.statsText}>
-                {completedCount}/{tasks.length}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </LinearGradient>
+      <Header
+        completedCount={completedCount}
+        totalTasks={tasks.length}
+        onPressStats={() => setShowCompleted(!showCompleted)}
+      />
 
       <View style={styles.content}>
         <View style={styles.quickActionsContainer}>
