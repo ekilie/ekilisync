@@ -6,72 +6,52 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Dimensions,
   Platform,
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { addTaskList, TaskList, TaskItem } from "../../utils/ekilisync";
 import { StatusBar } from "expo-status-bar";
 import { Colors } from "@/constants/Colors";
+import { Task, addTask } from "../../utils/ekilisync"; 
 
-const { width } = Dimensions.get("window");
-
-export default function AddTaskListScreen() {
+export default function AddTaskScreen() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "" });
-  const [newItemText, setNewItemText] = useState("");
-  const [items, setItems] = useState<TaskItem[]>([]);
+  const [form, setForm] = useState<Pick<Task, "title" | "description">>({
+    title: "",
+    description: "",
+  });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!form.name.trim()) {
-      newErrors.name = "Task list name is required";
-    }
+    if (!form.title.trim()) newErrors.title = "Title is required";
+    if (!form.description.trim()) newErrors.description = "Description is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleAddItem = () => {
-    if (!newItemText.trim()) return;
-    const newItem: TaskItem = {
-      id: Math.random().toString(36).substr(2, 9),
-      content: newItemText,
-      completed: false,
-      createdAt: new Date().toISOString(),
-    };
-    setItems([...items, newItem]);
-    setNewItemText("");
-  };
-
-  const handleRemoveItem = (itemId: string) => {
-    setItems(items.filter(item => item.id !== itemId));
-  };
-
   const handleSave = async () => {
     if (!validateForm()) {
-      Alert.alert("Error", "Please fill in the required fields correctly");
+      Alert.alert("Error", "Please fill in all required fields");
       return;
     }
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    const newTaskList: TaskList = {
+    const newTask: Task = {
       id: Math.random().toString(36).substr(2, 9),
-      name: form.name,
-      createdAt: new Date().toISOString(),
-      items,
+      title: form.title,
+      description: form.description,
     };
 
     try {
-      await addTaskList(newTaskList);
+      await addTask(newTask);
       Alert.alert(
         "Success",
-        "Task list added successfully",
+        "Task added successfully",
         [
           {
             text: "OK",
@@ -81,10 +61,10 @@ export default function AddTaskListScreen() {
         { cancelable: false }
       );
     } catch (error) {
-      console.error("Error saving task list:", error);
+      console.error("Error saving task:", error);
       Alert.alert(
         "Error",
-        "Failed to save task list. Please try again.",
+        "Failed to save task. Please try again.",
         [{ text: "OK" }],
         { cancelable: false }
       );
@@ -108,57 +88,51 @@ export default function AddTaskListScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="chevron-back" size={28} color={Colors.accent} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>New Task List</Text>
+          <Text style={styles.headerTitle}>New Task</Text>
         </View>
 
         <ScrollView
           style={styles.formContainer}
-          showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.formContentContainer}
+          keyboardShouldPersistTaps="handled"
         >
-          {/* Task List Name */}
-          <View style={styles.section}>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={[styles.mainInput, errors.name && styles.inputError]}
-                placeholder="Task List Name"
-                placeholderTextColor="#999"
-                value={form.name}
-                onChangeText={(text) => {
-                  setForm({ ...form, name: text });
-                  if (errors.name) setErrors({ ...errors, name: "" });
-                }}
-              />
-              {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
-            </View>
+          {/* Title Input */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[styles.input, errors.title && styles.inputError]}
+              placeholder="Task Title"
+              placeholderTextColor="#999"
+              value={form.title}
+              onChangeText={(text) => {
+                setForm({ ...form, title: text });
+                if (errors.title) setErrors({ ...errors, title: "" });
+              }}
+              maxLength={60}
+            />
+            {errors.title && <Text style={styles.errorText}>{errors.title}</Text>}
           </View>
 
-          {/* Task Items Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Task Items</Text>
-            <View style={styles.inputRow}>
-              <TextInput
-                style={styles.itemInput}
-                placeholder="New Task Item"
-                placeholderTextColor="#999"
-                value={newItemText}
-                onChangeText={setNewItemText}
-              />
-              <TouchableOpacity style={styles.addItemButton} onPress={handleAddItem}>
-                <Ionicons name="add" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
-            {items.length > 0 && (
-              <View style={styles.itemsContainer}>
-                {items.map((item) => (
-                  <View key={item.id} style={styles.itemRow}>
-                    <Text style={styles.itemText}>{item.content}</Text>
-                    <TouchableOpacity onPress={() => handleRemoveItem(item.id)}>
-                      <Ionicons name="trash" size={20} color="#FF5252" />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
+          {/* Description Input */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[
+                styles.input,
+                styles.descriptionInput,
+                errors.description && styles.inputError,
+              ]}
+              placeholder="Task Description"
+              placeholderTextColor="#999"
+              value={form.description}
+              onChangeText={(text) => {
+                setForm({ ...form, description: text });
+                if (errors.description) setErrors({ ...errors, description: "" });
+              }}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+            {errors.description && (
+              <Text style={styles.errorText}>{errors.description}</Text>
             )}
           </View>
         </ScrollView>
@@ -176,7 +150,7 @@ export default function AddTaskListScreen() {
               end={{ x: 1, y: 0 }}
             >
               <Text style={styles.saveButtonText}>
-                {isSubmitting ? "Adding..." : "Add Task List"}
+                {isSubmitting ? "Saving..." : "Save Task"}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -241,20 +215,15 @@ const styles = StyleSheet.create({
   formContentContainer: {
     padding: 20,
   },
-  section: {
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#1a1a1a",
-    marginBottom: 15,
-    marginTop: 10,
-  },
   inputContainer: {
+    marginBottom: 20,
+  },
+  input: {
     backgroundColor: "white",
     borderRadius: 16,
-    marginBottom: 12,
+    padding: 18,
+    fontSize: 18,
+    color: "#333",
     borderWidth: 1,
     borderColor: "#e0e0e0",
     shadowColor: "#000",
@@ -263,10 +232,9 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  mainInput: {
-    fontSize: 20,
-    color: "#333",
-    padding: 15,
+  descriptionInput: {
+    height: 150,
+    textAlignVertical: "top",
   },
   inputError: {
     borderColor: "#FF5252",
@@ -276,48 +244,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     marginLeft: 12,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  itemInput: {
-    flex: 1,
-    backgroundColor: "white",
-    fontSize: 18,
-    padding: 15,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    marginRight: 10,
-  },
-  addItemButton: {
-    backgroundColor: Colors.accent,
-    padding: 12,
-    borderRadius: 16,
-  },
-  itemsContainer: {
-    marginTop: 15,
-  },
-  itemRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "white",
-    padding: 15,
-    borderRadius: 16,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  itemText: {
-    fontSize: 18,
-    color: "#333",
   },
   footer: {
     padding: 20,
@@ -358,5 +284,3 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 });
-
-export { AddTaskListScreen };
