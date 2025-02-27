@@ -131,7 +131,7 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Your Tasks</Text>
-            <Link href="/tasks" asChild>
+            <Link href="/tasks/all" asChild>
               <TouchableOpacity>
                 <Text style={styles.seeAllButton}>See All</Text>
               </TouchableOpacity>
