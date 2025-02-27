@@ -29,7 +29,7 @@ const QUICK_ACTIONS = [
   {
     icon: "list-outline" as const,
     label: "All Tasks",
-    route: "/tasks" as const,
+    route: "/tasks/all" as const,
     color: "#1976D2",
     gradient: ["#2196F3", "#1976D2"] as [string, string],
   },
@@ -50,7 +50,7 @@ const QUICK_ACTIONS = [
 ];
 
 export default function HomeScreen() {
-  const router = useRouter();
+  // const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showCompleted, setShowCompleted] = useState(false);
 
