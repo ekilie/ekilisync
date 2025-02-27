@@ -7,7 +7,10 @@ export interface Task {
   id: string;
   title: string;
   description: string;
-  completed: boolean
+  completed: boolean,
+  createdAt: string;
+  updatedAt: string;
+  dueDate: string;
 }
 
 export interface Partner {
