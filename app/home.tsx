@@ -28,6 +28,7 @@ import {
   scheduleMedicationReminder,
 } from "../utils/notifications";
 import { Colors } from "@/constants/Colors";
+import { getTasks } from "@/utils/ekilisync";
 
 const { width } = Dimensions.get("window");
 
@@ -131,13 +132,15 @@ function CircularProgress({
   );
 }
 
-export default function HomeScreen() {
+export default async function HomeScreen() {
   const router = useRouter();
   const [showNotifications, setShowNotifications] = useState(false);
   const [medications, setMedications] = useState<Medication[]>([]);
   const [todaysMedications, setTodaysMedications] = useState<Medication[]>([]);
   const [completedDoses, setCompletedDoses] = useState(0);
   const [doseHistory, setDoseHistory] = useState<DoseHistory[]>([]);
+
+  const tasks = await getTasks()
 
   const loadMedications = useCallback(async () => {
     try {
@@ -255,7 +258,7 @@ export default function HomeScreen() {
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
             <View style={styles.flex1}>
-              <Text style={styles.greeting}>Daily Progress</Text>
+              <Text style={styles.greeting}>ekiliSync</Text>
             </View>
             <TouchableOpacity
               style={styles.notificationButton}
@@ -304,80 +307,74 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Today's Schedule</Text>
-            <Link href="/calendar" asChild>
-              <TouchableOpacity>
-                <Text style={styles.seeAllButton}>See All</Text>
-              </TouchableOpacity>
-            </Link>
+  <View style={styles.sectionHeader}>
+    <Text style={styles.sectionTitle}>Your Tasks</Text>
+    <Link href="/tasks" asChild>
+      <TouchableOpacity>
+        <Text style={styles.seeAllButton}>See All</Text>
+      </TouchableOpacity>
+    </Link>
+  </View>
+  {tasks.length === 0 ? (
+    <View style={styles.emptyState}>
+      <Ionicons name="checkmark-done-outline" size={48} color="#ccc" />
+      <Text style={styles.emptyStateText}>
+        No tasks found
+      </Text>
+      <Link href="/tasks/add" asChild>
+        <TouchableOpacity style={styles.addTaskButton}>
+          <Text style={styles.addTaskButtonText}>
+            Create New Task
+          </Text>
+        </TouchableOpacity>
+      </Link>
+    </View>
+  ) : (
+    tasks.map((task) => {
+      const completed = isTaskCompleted(task.id);
+      return (
+        <View key={task.id} style={styles.taskCard}>
+          <View style={styles.taskIcon}>
+            <Ionicons
+              name="document-text-outline"
+              size={24}
+              color={Colors.accent}
+            />
           </View>
-          {todaysMedications.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="medical-outline" size={48} color="#ccc" />
-              <Text style={styles.emptyStateText}>
-                No medications scheduled for today
-              </Text>
-              <Link href="/medications/add" asChild>
-                <TouchableOpacity style={styles.addMedicationButton}>
-                  <Text style={styles.addMedicationButtonText}>
-                    Add Medication
-                  </Text>
-                </TouchableOpacity>
-              </Link>
-            </View>
-          ) : (
-            todaysMedications.map((medication) => {
-              const taken = isDoseTaken(medication.id);
-              return (
-                <View key={medication.id} style={styles.doseCard}>
-                  <View
-                    style={[
-                      styles.doseBadge,
-                      { backgroundColor: `${medication.color}15` },
-                    ]}
-                  >
-                    <Ionicons
-                      name="medical"
-                      size={24}
-                      color={medication.color}
-                    />
-                  </View>
-                  <View style={styles.doseInfo}>
-                    <View>
-                      <Text style={styles.medicineName}>{medication.name}</Text>
-                      <Text style={styles.dosageInfo}>{medication.dosage}</Text>
-                    </View>
-                    <View style={styles.doseTime}>
-                      <Ionicons name="time-outline" size={16} color="#666" />
-                      <Text style={styles.timeText}>{medication.times[0]}</Text>
-                    </View>
-                  </View>
-                  {taken ? (
-                    <View style={[styles.takenBadge]}>
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={20}
-                        color="#d98880"
-                      />
-                      <Text style={styles.takenText}>Taken</Text>
-                    </View>
-                  ) : (
-                    <TouchableOpacity
-                      style={[
-                        styles.takeDoseButton,
-                        { backgroundColor: medication.color },
-                      ]}
-                      onPress={() => handleTakeDose(medication)}
-                    >
-                      <Text style={styles.takeDoseText}>Take</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              );
-            })
-          )}
+          <View style={styles.taskInfo}>
+            <Text style={styles.taskTitle}>{task.title}</Text>
+            <Text 
+              style={styles.taskDescription}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
+              {task.description}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[
+              styles.statusButton,
+              completed && styles.completedStatus
+            ]}
+            onPress={() => handleTaskComplete(task.id)}
+          >
+            {completed ? (
+              <>
+                <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+                <Text style={styles.statusText}>Completed</Text>
+              </>
+            ) : (
+              <>
+                <Ionicons name="ellipse-outline" size={20} color="#666" />
+                <Text style={styles.statusText}>Mark Complete</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
+      );
+    })
+  )}
+</View>
       </View>
 
       <Modal

@@ -7,6 +7,7 @@ export interface Task {
   id: string;
   title: string;
   description: string;
+  completed: boolean
 }
 
 export interface Partner {
@@ -30,7 +31,7 @@ export async function getTasks(): Promise<Task[]> {
 export async function addTask(task: Task): Promise<void> {
   try {
     const tasks = await getTasks();
-    tasks.push(task);
+    tasks.push({ ...task, completed: false });
     await AsyncStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
   } catch (error) {
     console.error("Error adding task:", error);
