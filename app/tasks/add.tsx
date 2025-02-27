@@ -45,6 +45,7 @@ export default function AddTaskScreen() {
       id: Math.random().toString(36).substr(2, 9),
       title: form.title,
       description: form.description,
+      completed:false
     };
 
     try {

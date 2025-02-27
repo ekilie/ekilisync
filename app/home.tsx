@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,34 +6,16 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  Animated,
-  Modal,
   Alert,
-  AppState,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, useRouter } from "expo-router";
+import { Link, useFocusEffect, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import Svg, { Circle } from "react-native-svg";
-import {
-  getMedications,
-  Medication,
-  getTodaysDoses,
-  recordDose,
-  DoseHistory,
-} from "../utils/storage";
-import { useFocusEffect } from "@react-navigation/native";
-import {
-  registerForPushNotificationsAsync,
-  scheduleMedicationReminder,
-} from "../utils/notifications";
 import { Colors } from "@/constants/Colors";
-import { getTasks } from "@/utils/ekilisync";
+import { Task, getTasks, updateTask } from "@/utils/ekilisync";
+import { StatusBar } from "expo-status-bar";
 
 const { width } = Dimensions.get("window");
-
-// Create animated circle component
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const QUICK_ACTIONS = [
   {
@@ -44,216 +26,77 @@ const QUICK_ACTIONS = [
     gradient: [Colors.accentLight, Colors.accent] as [string, string],
   },
   {
-    icon: "calendar-outline" as const,
-    label: "Shared\nTasks",
-    route: "/calendar" as const,
+    icon: "list-outline" as const,
+    label: "All Tasks",
+    route: "/tasks" as const,
     color: "#1976D2",
     gradient: ["#2196F3", "#1976D2"] as [string, string],
   },
   {
-    icon: "time-outline" as const,
-    label: "Completed\nTasks",
-    route: "/history" as const,
+    icon: "checkmark-done-outline" as const,
+    label: "Completed",
+    route: "/tasks/completed" as const,
     color: "#C2185B",
     gradient: ["#E91E63", "#C2185B"] as [string, string],
   },
   {
-    icon: "medical-outline" as const,
-    label: "Sync",
-    route: "/refills" as const,
+    icon: "people-outline" as const,
+    label: "Shared",
+    route: "/shared" as const,
     color: "#E64A19",
     gradient: ["#FF5722", "#E64A19"] as [string, string],
   },
 ];
 
-interface CircularProgressProps {
-  progress: number;
-  totalDoses: number;
-  completedDoses: number;
-}
-
-function CircularProgress({
-  progress,
-  totalDoses,
-  completedDoses,
-}: CircularProgressProps) {
-  const animatedValue = useRef(new Animated.Value(0)).current;
-  const size = width * 0.55;
-  const strokeWidth = 15;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-
-  useEffect(() => {
-    Animated.timing(animatedValue, {
-      toValue: progress,
-      duration: 1500,
-      useNativeDriver: true,
-    }).start();
-  }, [progress]);
-
-  const strokeDashoffset = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [circumference, 0],
-  });
-
-  return (
-    <View style={styles.progressContainer}>
-      <View style={styles.progressTextContainer}>
-        <Text style={styles.progressPercentage}>
-          {Math.round(progress * 100)}%
-        </Text>
-        <Text style={styles.progressDetails}>
-          {completedDoses} of {totalDoses} doses
-        </Text>
-      </View>
-      <Svg width={size} height={size} style={styles.progressRing}>
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="rgba(255, 255, 255, 0.2)"
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        <AnimatedCircle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="white"
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        />
-      </Svg>
-    </View>
-  );
-}
-
-export default async function HomeScreen() {
+export default function HomeScreen() {
   const router = useRouter();
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [medications, setMedications] = useState<Medication[]>([]);
-  const [todaysMedications, setTodaysMedications] = useState<Medication[]>([]);
-  const [completedDoses, setCompletedDoses] = useState(0);
-  const [doseHistory, setDoseHistory] = useState<DoseHistory[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [showCompleted, setShowCompleted] = useState(false);
 
-  const tasks = await getTasks()
-
-  const loadMedications = useCallback(async () => {
+  const loadTasks = useCallback(async () => {
     try {
-      const [allMedications, todaysDoses] = await Promise.all([
-        getMedications(),
-        getTodaysDoses(),
-      ]);
-
-      setDoseHistory(todaysDoses);
-      setMedications(allMedications);
-
-      // Filter medications for today
-      const today = new Date();
-      const todayMeds = allMedications.filter((med) => {
-        const startDate = new Date(med.startDate);
-        const durationDays = parseInt(med.duration.split(" ")[0]);
-
-        // For ongoing medications or if within duration
-        if (
-          durationDays === -1 ||
-          (today >= startDate &&
-            today <=
-            new Date(
-              startDate.getTime() + durationDays * 24 * 60 * 60 * 1000
-            ))
-        ) {
-          return true;
-        }
-        return false;
-      });
-
-      setTodaysMedications(todayMeds);
-
-      // Calculate completed doses
-      const completed = todaysDoses.filter((dose) => dose.taken).length;
-      setCompletedDoses(completed);
+      const allTasks = await getTasks();
+      setTasks(allTasks);
     } catch (error) {
-      console.error("Error loading medications:", error);
+      console.error("Error loading tasks:", error);
+      Alert.alert("Error", "Failed to load tasks");
     }
   }, []);
 
-  const setupNotifications = async () => {
-    try {
-      const token = await registerForPushNotificationsAsync();
-      if (!token) {
-        console.log("Failed to get push notification token");
-        return;
-      }
-
-      // Schedule reminders for all medications
-      const medications = await getMedications();
-      for (const medication of medications) {
-        if (medication.reminderEnabled) {
-          await scheduleMedicationReminder(medication);
-        }
-      }
-    } catch (error) {
-      console.error("Error setting up notifications:", error);
-    }
-  };
-
-  // Use useEffect for initial load
   useEffect(() => {
-    loadMedications();
-    setupNotifications();
-
-    // Handle app state changes for notifications
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
-      if (nextAppState === "active") {
-        loadMedications();
-      }
-    });
-
-    return () => {
-      subscription.remove();
-    };
+    loadTasks();
   }, []);
 
-  // Use useFocusEffect for subsequent updates
   useFocusEffect(
     useCallback(() => {
-      const unsubscribe = () => {
-        // Cleanup if needed
-      };
-
-      loadMedications();
-      return () => unsubscribe();
-    }, [loadMedications])
+      loadTasks();
+    }, [loadTasks])
   );
 
-  const handleTakeDose = async (medication: Medication) => {
+  const handleTaskComplete = async (taskId: string) => {
     try {
-      await recordDose(medication.id, true, new Date().toISOString());
-      await loadMedications(); // Reload data after recording dose
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        const updatedTask = { ...task, completed: !task.completed };
+        await updateTask(updatedTask);
+        await loadTasks();
+      }
     } catch (error) {
-      console.error("Error recording dose:", error);
-      Alert.alert("Error", "Failed to record dose. Please try again.");
+      console.error("Error updating task:", error);
+      Alert.alert("Error", "Failed to update task");
     }
   };
 
-  const isDoseTaken = (medicationId: string) => {
-    return doseHistory.some(
-      (dose) => dose.medicationId === medicationId && dose.taken
-    );
+  const isTaskCompleted = (taskId: string) => {
+    return tasks.find(t => t.id === taskId)?.completed || false;
   };
 
-  const progress =
-    todaysMedications.length > 0
-      ? completedDoses / (todaysMedications.length * 2)
-      : 0;
+  const completedCount = tasks.filter(t => t.completed).length;
+  const progress = tasks.length > 0 ? completedCount / tasks.length : 0;
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <StatusBar style="light" />
       <LinearGradient colors={[Colors.accentLight, Colors.accent]} style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.headerTop}>
@@ -261,24 +104,15 @@ export default async function HomeScreen() {
               <Text style={styles.greeting}>ekiliSync</Text>
             </View>
             <TouchableOpacity
-              style={styles.notificationButton}
-              onPress={() => setShowNotifications(true)}
+              style={styles.statsButton}
+              onPress={() => setShowCompleted(!showCompleted)}
             >
-              <Ionicons name="notifications-outline" size={24} color="white" />
-              {todaysMedications.length > 0 && (
-                <View style={styles.notificationBadge}>
-                  <Text style={styles.notificationCount}>
-                    {todaysMedications.length}
-                  </Text>
-                </View>
-              )}
+              <Ionicons name="stats-chart" size={24} color="white" />
+              <Text style={styles.statsText}>
+                {completedCount}/{tasks.length}
+              </Text>
             </TouchableOpacity>
           </View>
-          <CircularProgress
-            progress={progress}
-            totalDoses={todaysMedications.length * 2}
-            completedDoses={completedDoses}
-          />
         </View>
       </LinearGradient>
 
@@ -307,114 +141,62 @@ export default async function HomeScreen() {
         </View>
 
         <View style={styles.section}>
-  <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>Your Tasks</Text>
-    <Link href="/tasks" asChild>
-      <TouchableOpacity>
-        <Text style={styles.seeAllButton}>See All</Text>
-      </TouchableOpacity>
-    </Link>
-  </View>
-  {tasks.length === 0 ? (
-    <View style={styles.emptyState}>
-      <Ionicons name="checkmark-done-outline" size={48} color="#ccc" />
-      <Text style={styles.emptyStateText}>
-        No tasks found
-      </Text>
-      <Link href="/tasks/add" asChild>
-        <TouchableOpacity style={styles.addTaskButton}>
-          <Text style={styles.addTaskButtonText}>
-            Create New Task
-          </Text>
-        </TouchableOpacity>
-      </Link>
-    </View>
-  ) : (
-    tasks.map((task) => {
-      const completed = isTaskCompleted(task.id);
-      return (
-        <View key={task.id} style={styles.taskCard}>
-          <View style={styles.taskIcon}>
-            <Ionicons
-              name="document-text-outline"
-              size={24}
-              color={Colors.accent}
-            />
-          </View>
-          <View style={styles.taskInfo}>
-            <Text style={styles.taskTitle}>{task.title}</Text>
-            <Text 
-              style={styles.taskDescription}
-              numberOfLines={2}
-              ellipsizeMode="tail"
-            >
-              {task.description}
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={[
-              styles.statusButton,
-              completed && styles.completedStatus
-            ]}
-            onPress={() => handleTaskComplete(task.id)}
-          >
-            {completed ? (
-              <>
-                <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
-                <Text style={styles.statusText}>Completed</Text>
-              </>
-            ) : (
-              <>
-                <Ionicons name="ellipse-outline" size={20} color="#666" />
-                <Text style={styles.statusText}>Mark Complete</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
-      );
-    })
-  )}
-</View>
-      </View>
-
-      <Modal
-        visible={showNotifications}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowNotifications(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Notifications</Text>
-              <TouchableOpacity
-                onPress={() => setShowNotifications(false)}
-                style={styles.closeButton}
-              >
-                <Ionicons name="close" size={24} color="#333" />
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Your Tasks</Text>
+            <Link href="/tasks" asChild>
+              <TouchableOpacity>
+                <Text style={styles.seeAllButton}>See All</Text>
               </TouchableOpacity>
-            </View>
-            {todaysMedications.map((medication) => (
-              <View key={medication.id} style={styles.notificationItem}>
-                <View style={styles.notificationIcon}>
-                  <Ionicons name="medical" size={24} color={medication.color} />
-                </View>
-                <View style={styles.notificationContent}>
-                  <Text style={styles.notificationTitle}>
-                    {medication.name}
-                  </Text>
-                  <Text style={styles.notificationMessage}>
-                    {medication.dosage}
-                  </Text>
-                  <Text style={styles.notificationTime}>
-                    {medication.times[0]}
-                  </Text>
-                </View>
-              </View>
-            ))}
+            </Link>
           </View>
+          {tasks.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="checkmark-done-outline" size={48} color="#ccc" />
+              <Text style={styles.emptyStateText}>No tasks found</Text>
+              <Link href="/tasks/add" asChild>
+                <TouchableOpacity style={styles.addTaskButton}>
+                  <Text style={styles.addTaskButtonText}>Create New Task</Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
+          ) : (
+            tasks.map((task) => (
+              <View key={task.id} style={styles.taskCard}>
+                <View style={styles.taskIcon}>
+                  <Ionicons
+                    name="document-text-outline"
+                    size={24}
+                    color={Colors.accent}
+                  />
+                </View>
+                <View style={styles.taskInfo}>
+                  <Text style={styles.taskTitle}>{task.title}</Text>
+                  <Text
+                    style={styles.taskDescription}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                  >
+                    {task.description}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={[
+                    styles.statusButton,
+                    task.completed && styles.completedStatus
+                  ]}
+                  onPress={() => handleTaskComplete(task.id)}
+                >
+                  {task.completed ? (
+                    <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+                  ) : (
+                    <Ionicons name="ellipse-outline" size={20} color="#666" />
+                  )}
+                </TouchableOpacity>
+              </View>
+            ))
+          )}
         </View>
-      </Modal>
+      </View>
     </ScrollView>
   );
 }
@@ -718,5 +500,70 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 14,
     marginLeft: 4,
+  },
+  taskCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  taskIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E3F2FD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  taskInfo: {
+    flex: 1,
+  },
+  taskTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  taskDescription: {
+    fontSize: 14,
+    color: '#666',
+  },
+  statusButton: {
+    padding: 8,
+    borderRadius: 20,
+    marginLeft: 10,
+  },
+  completedStatus: {
+    backgroundColor: '#E8F5E9',
+  },
+  statsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+  },
+  statsText: {
+    color: 'white',
+    marginLeft: 8,
+    fontWeight: '600',
+  },
+  addTaskButton: {
+    backgroundColor: Colors.accent,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  addTaskButtonText: {
+    color: 'white',
+    fontWeight: '600',
   },
 });
