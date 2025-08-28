@@ -1,9 +1,9 @@
 [submodule "backend"]
 	path = backend
-	url = ./backend
+	url = https://github.com/tacheraSasi/verifya-backend.git
 [submodule "mobile"]
 	path = mobile
-	url = ./mobile
+	url = https://github.com/ekilie/sync-mobile.git
 [submodule "web"]
 	path = web
-	url = ./web
+	url = https://github.com/ekilie/ekilisync-web.git
