@@ -1,0 +1,9 @@
+[submodule "backend"]
+	path = backend
+	url = ./backend
+[submodule "mobile"]
+	path = mobile
+	url = ./mobile
+[submodule "web"]
+	path = web
+	url = ./web
